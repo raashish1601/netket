@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from netket.operator import spin
@@ -76,3 +78,21 @@ def test_sigmay_is_complex():
 
     sy = spin.sigmay(hi, 0, dtype=np.complex128)
     assert sy.dtype == np.complex128
+
+
+@pytest.mark.parametrize("op", ["sigmax", "sigmay", "sigmaz", "sigmap", "sigmam"])
+def test_spin_operators_on_fermions_warn(op):
+    hi = nk.hilbert.SpinOrbitalFermions(3, s=1 / 2)
+    with pytest.warns(UserWarning, match="fermionic Hilbert space"):
+        getattr(nk.operator.spin, op)(hi, 0)
+
+    # the fermionic modes of a tensor product are detected too
+    hi = nk.hilbert.Spin(0.5, 2) * nk.hilbert.SpinOrbitalFermions(2)
+    with pytest.warns(UserWarning, match="fermionic Hilbert space"):
+        getattr(nk.operator.spin, op)(hi, 3)
+
+    # spin sites do not warn
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        getattr(nk.operator.spin, op)(hi, 0)
+        getattr(nk.operator.spin, op)(nk.hilbert.Spin(0.5, 3), 0)

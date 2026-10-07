@@ -8,6 +8,9 @@
 ### New Features
 * {class}`netket.utils.struct.Pytree` subclasses can override `__process_deserialization_state__` to adjust the saved state before it is loaded, e.g. to read files saved by older versions [PR #2285](https://github.com/netket/netket/pull/2285).
 
+### Behaviour Changes
+* The spin operators in `netket.operator.spin` ({func}`~netket.operator.spin.sigmax`, {func}`~netket.operator.spin.sigmay`, {func}`~netket.operator.spin.sigmaz`, {func}`~netket.operator.spin.sigmap` and {func}`~netket.operator.spin.sigmam`) now warn when they act on a fermionic mode of a {class}`~netket.hilbert.SpinOrbitalFermions` space, because they do not account for the fermionic sign. Use the operators in `netket.operator.fermion` instead [issue #1774](https://github.com/netket/netket/issues/1774).
+
 ### Bug Fixes
 * {meth}`netket.vqs.MCState.sample` now uses the `n_discard_per_chain` argument to decide whether to discard samples, instead of the value set in the state. Before, `vstate.sample(n_discard_per_chain=k)` did not discard anything if the state had `n_discard_per_chain=0`, and an explicit `n_discard_per_chain=0` still discarded samples if the state had a positive value. The discarded samples are now also generated with the same variables as the kept ones, which matters for subclasses that override the variables used for sampling [PR #2292](https://github.com/netket/netket/pull/2292).
 * The progress bar of `driver.run` now shows the right progress when a callback changes the step count in `on_run_start` (for example when resuming from a checkpoint), instead of ending before the end of the bar [PR #2289](https://github.com/netket/netket/pull/2289).

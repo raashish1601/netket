@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings as _warnings
 from typing import TypeVar as _TypeVar
 from scipy import sparse as _sparse
 from netket.utils.types import DType as _DType
@@ -24,6 +25,27 @@ from ._local_operator import (
 )
 
 _LocalOperatorT = _TypeVar("_LocalOperatorT", bound=_LocalOperatorBase)
+
+
+def _warn_if_fermionic(hilbert: _DiscreteHilbert, site: int, name: str):
+    """Warn when a spin operator is built on a fermionic site.
+
+    Spin operators treat a site of local dimension M as a (M-1)/2 spin, so on
+    fermionic modes they are not fermionic operators.
+    """
+    from netket.hilbert import SpinOrbitalFermions, TensorHilbert
+
+    if isinstance(hilbert, TensorHilbert):
+        hilbert = hilbert.subspaces[hilbert._sub_index(site)]
+    if isinstance(hilbert, SpinOrbitalFermions):
+        _warnings.warn(
+            f"`nk.operator.spin.{name}` was used on a fermionic Hilbert space. "
+            "Spin operators act on each mode as on a spin-1/2 and do not account "
+            "for the fermionic sign, so the resulting operator is not a fermionic "
+            "operator. Build fermionic operators with `nk.operator.fermion` instead.",
+            UserWarning,
+            stacklevel=3,
+        )
 
 
 def identity(
@@ -67,6 +89,7 @@ def sigmax(
     Returns:
         An instance of {class}`nk.operator.LocalOperator`.
     """
+    _warn_if_fermionic(hilbert, site, "sigmax")
     import numpy as np
 
     N = hilbert.size_at_index(site)
@@ -100,6 +123,7 @@ def sigmay(
     Returns:
         An instance of {class}`nk.operator.LocalOperator`.
     """
+    _warn_if_fermionic(hilbert, site, "sigmay")
     import numpy as np
     import netket.jax as nkjax
     from netket.utils import module_version
@@ -155,6 +179,7 @@ def sigmaz(
     Returns:
         An instance of {class}`nk.operator.LocalOperator`.
     """
+    _warn_if_fermionic(hilbert, site, "sigmaz")
     import numpy as np
 
     N = hilbert.size_at_index(site)
@@ -188,6 +213,7 @@ def sigmam(
     Returns:
         An instance of {class}`nk.operator.LocalOperator`.
     """
+    _warn_if_fermionic(hilbert, site, "sigmam")
     import numpy as np
 
     N = hilbert.size_at_index(site)
@@ -222,6 +248,7 @@ def sigmap(
     Returns:
         An instance of {class}`nk.operator.LocalOperator`.
     """
+    _warn_if_fermionic(hilbert, site, "sigmap")
     import numpy as np
 
     N = hilbert.size_at_index(site)
